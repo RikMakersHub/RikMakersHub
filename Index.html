@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="google-site-verification" content="x-09ySm6T31q4KFyEPVdyi0epqHWX1OTm_cnX1tyqFI" />
+    <title>RikMakersHub</title>
+    <style>
+        :root { --primary: #00979d; --dark: #333; --light: #f4f4f9; }
+        body { font-family: Arial, sans-serif; line-height: 1.6; margin: 0; background: var(--light); color: var(--dark); }
+        header { background: var(--primary); color: white; padding: 1.5rem; text-align: center; }
+        .controls { background: #222; padding: 1rem; display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; }
+        .controls input, .controls select { padding: 0.5rem 1rem; border-radius: 4px; border: none; font-size: 1rem; }
+        .container { max-width: 1000px; margin: 2rem auto; padding: 0 1rem; }
+        .stats { text-align: center; margin-bottom: 1rem; font-weight: bold; color: #666; }
+        .project-card { background: white; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-bottom: 2rem; padding: 2rem; }
+        .badge { display: inline-block; padding: 0.25rem 0.5rem; border-radius: 4px; color: white; font-weight: bold; font-size: 0.8rem; }
+        .badge.uno { background: #00979d; }
+        .badge.nano { background: #db5a3c; }
+        .badge.esp32 { background: #e73525; }
+        .badge.other { background: #718096; }
+        ul.components { background: #eee; padding: 1rem 2rem; border-radius: 4px; list-style-type: square; }
+        pre { background: #272822; color: #f8f8f2; padding: 1rem; border-radius: 4px; overflow-x: auto; font-family: monospace; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Arduino & ESP32 Project Hub</h1>
+        <p>Your ultimate open-source engineering reference library</p>
+    </header>
+
+    <div class="controls">
+        <input type="text" id="searchInput" placeholder="Search projects or parts..." onkeyup="filterProjects()">
+        <select id="boardFilter" onchange="filterProjects()">
+            <option value="all">All Boards</option>
+            <option value="Uno">Arduino Uno</option>
+            <option value="Nano">Arduino Nano</option>
+            <option value="ESP32">ESP32</option>
+            <option value="Other">Other Boards</option>
+        </select>
+    </div>
+        <!-- Paste this block right above <div class="container"> -->
+    <div style="background: #eef9fa; text-align: center; padding: 0.5rem; font-weight: bold; border-bottom: 2px solid var(--primary); color: var(--dark);">
+        🌐 Global Repository Traffic: <span id="liveCounter" style="color: #e73525; font-size: 1.1rem;">Loading...</span> Total Views
+    </div>
+
+    <div class="container">
+        <div class="stats" id="projectCount">Processing repository engine...</div>
+        <div id="projectContainer"></div>
+    </div>
+
+    <footer style="background: #222; color: #aaa; text-align: center; padding: 1.5rem; margin-top: 3rem; font-size: 0.9rem; border-top: 3px solid var(--primary);">
+        <p>&copy; 2026 RikMakersHub. All Rights Reserved.</p>
+        <p style="font-size: 0.8rem; color: #777; margin-top: 0.5rem;">
+            Official Registry: ://tinyurl.com. Unauthorized copying or redistribution is prohibited.
+        </p>
+    </footer>
+
+    <script>
+        // Perfect 80-Project Self-Contained Clean Data Matrix
+        const backupProjects = [
+            { title: "Smart Traffic Light System", board: "Uno", components: "Arduino Uno, Red LED, Yellow LED, Green LED, 3x 220 Ohm Resistors", type: "led" },
+            { title: "Ultrasonic Distance Radar", board: "Uno", components: "Arduino Uno, HC-SR04 Ultrasonic Sensor, SG90 Servo Motor, Jumper Wires", type: "radar" },
+            { title: "Soil Moisture Plant Alarm", board: "Uno", components: "Arduino Uno, Soil Moisture Sensor, 5V Active Buzzer, Breadboard", type: "sensor" },
+            { title: "Digital Thermometer Display", board: "Uno", components: "Arduino Uno, LM35 Temperature Sensor, 16x2 I2C LCD Display", type: "display" },
+            { title: "Laser Tripwire Security System", board: "Uno", components: "Arduino Uno, Laser Diode, LDR Photoresistor, 5V Relay Module, Piezo Buzzer", type: "sensor" },
+            { title: "TV Remote Controlled LEDs", board: "Uno", components: "Arduino Uno, IR Receiver HX1838, IR Remote Control, 3x LEDs", type: "led" },
+            { title: "Automatic Smart Dustbin", board: "Uno", components: "Arduino Uno, HC-SR04 Ultrasonic Sensor, SG90 Servo Motor, 9V Battery", type: "radar" },
+            { title: "4x4 Matrix Keypad Door Lock", board: "Uno", components: "Arduino Uno, 4x4 Matrix Keypad, SG90 Servo, 16x2 LCD Display", type: "lock" },
+            { title: "Bluetooth RC Car Controller", board: "Uno", components: "Arduino Uno, HC-05 Bluetooth Module, L298N Motor Driver, 2x DC Motors", type: "motor" },
+            { title: "Digital Clock with Reset Alarm", board: "Uno", components: "Arduino Uno, DS1307 RTC Module, 16x2 LCD Display, 2x Push Buttons", type: "clock" },
+            { title: "Sound Activated Clap Switch", board: "Uno", components: "Arduino Uno, Sound Sensor Microphone Module, 5V Relay", type: "sensor" },
+            { title: "Smoke & Gas Leakage Detector", board: "Uno", components: "Arduino Uno, MQ-2 Gas Sensor, Active Buzzer, Red LED, Green LED", type: "sensor" },
+            { title: "Rain Detection Automated Wiper", board: "Uno", components: "Arduino Uno, Raindrops Sensor Board, SG90 Servo Motor", type: "radar" },
+            { title: "LED VU Meter Music Visualizer", board: "Uno", components: "Arduino Uno, Sound Microphone Sensor, 5x LEDs, Resistors", type: "led" },
+            { title: "Smart Street Light Controller", board: "Uno", components: "Arduino Uno, LDR Photoresistor, 10k Ohm Resistor, High-Power LED Module", type: "sensor" },
+            { title: "RFID Attendance Log System", board: "Uno", components: "Arduino Uno, RC522 RFID Module, Active Buzzer, Green LED", type: "lock" },
+            { title: "Digital Weight Measuring Scale", board: "Uno", components: "Arduino Uno, HX711 Weight Sensor Amplifier, 5kg Load Cell", type: "display" },
+            { title: "Anti-Theft Tilt Alarm System", board: "Uno", components: "Arduino Uno, SW-520D Tilt Ball Sensor, 5V Piezo Buzzer", type: "sensor" },
+            { title: "Password Protected Storage Safe", board: "Uno", components: "Arduino Uno, 4x4 Membrane Keypad, 5V Solenoid Lock, Relay", type: "lock" },
+            { title: "Heart Rate Pulse Counter", board: "Uno", components: "Arduino Uno, Pulse Heart Rate Sensor, 0.96 inch I2C OLED Display", type: "display" },
+            { title: "Non-Contact Tachometer (RPM)", board: "Uno", components: "Arduino Uno, IR Infrared Speed Sensor, 16x2 LCD, Rotating Disk", type: "display" },
+            { title: "Solar Panel Sun Tracker", board: "Uno", components: "Arduino Uno, 2x LDR Photoresistors, 2x 10k Resistors, SG90 Servo", type: "radar" },
+            { title: "Water Level Indicator & Pump", board: "Uno", components: "Arduino Uno, Water Level Depth Sensor, 5V Mini Water Pump", type: "motor" },
+            { title: "PIR Motion Sensor Security", board: "Uno", components: "Arduino Uno, HC-SR501 PIR Motion Sensor, 5V Buzzer, Red LED", type: "sensor" },
+            { title: "Piano Synthesizer Keyboard", board: "Uno", components: "Arduino Uno, 7x Push Buttons, 7x 10k Resistors, 8 Ohm Speaker", type: "sensor" },
+            { title: "Color Recognition Sorting Machine", board: "Uno", components: "Arduino Uno, TCS3200 Color Sensor, 2x SG90 Servo Motors", type: "radar" },
+            { title: "Digital Compass Indicator", board: "Uno", components: "Arduino Uno, HMC5883L Magnetometer, 0.96 inch I2C OLED Display", type: "display" },
+            { title: "Breathalyzer Alcohol Detector", board: "Uno", components: "Arduino Uno, MQ-3 Alcohol Sensor, 16x2 LCD, Red LED, Green LED", type: "sensor" },
+            { title: "Gesture Controlled Appliance Switch", board: "Uno", components: "Arduino Uno, APDS-9960 Gesture Sensor, 2-Channel Relay Board", type: "sensor" },
+            { title: "Joystick Controlled Robotic Arm", board: "Uno", components: "Arduino Uno, 2-Axis Joystick Module, 4x SG90 Servo Motors", type: "radar" },
+            { title: "Pocket Weather Station", board: "Nano", components: "Arduino Nano, DHT11 Sensor, 0.96 inch I2C OLED Display, Li-Po Battery", type: "display" },
+            { title: "LED Matrix Scrolling Badge", board: "Nano", components: "Arduino Nano, MAX7219 8x32 LED Matrix, HC-05 Bluetooth", type: "display" },
+            { title: "Fingerprint Security Ignition", board: "Nano", components: "Arduino Nano, AS608 Optical Fingerprint Sensor, 5V Relay, Green LED", type: "lock" },
+            { title: "Mini Pedometer Step Counter", board: "Nano", components: "Arduino Nano, ADXL345 3-Axis Accelerometer, 0.96 OLED", type: "display" },
+            { title: "Wearable Fall Detection Band", board: "Nano", components: "Arduino Nano, MPU6050 Gyroscope Sensor, Active Piezo Buzzer", type: "sensor" },
+            { title: "Smart Plant Watering Pot", board: "Nano", components: "Arduino Nano, Capacitive Soil Moisture Sensor, 5V Mini Pump", type: "motor" },
+            { title: "Pocket Simon Says Game", board: "Nano", components: "Arduino Nano, 4x Colored Push Buttons, 4x Matching LEDs, Mini Buzzer", type: "led" },
+            { title: "IR Remote Line Follower Robot", board: "Nano", components: "Arduino Nano, 2x IR Reflective Sensors, L2910 Motor Driver", type: "motor" },
+            { title: "Digital Spirit Level Indicator", board: "Nano", components: "Arduino Nano, MPU6050 Accelerometer, 8x LEDs", type: "led" },
+            { title: "Hand Gestures Air Mouse", board: "Nano", components: "Arduino Nano, MPU6050 Gyroscope, MPU9250 Magnetometer", type: "sensor" },
+            { title: "Breath Train Respiratory Monitor", board: "Nano", components: "Arduino Nano, Flexible Flex Sensor, 10k Resistor, Red LED", type: "sensor" },
+            { title: "Mini Stop-Watch Timer", board: "Nano", components: "Arduino Nano, TM1637 4-Digit 7-Segment Display, 2x Tactile Buttons", type: "display" },
+            { title: "Contactless Hand Sanitizer", board: "Nano", components: "Arduino Nano, IR Proximity Sensor, 5V Peristaltic Pump", type: "motor" },
+            { title: "UV Index Sunlight Monitor", board: "Nano", components: "Arduino Nano, ML8511 UV Sensor, 0.96 inch I2C OLED Screen", type: "display" },
+            { title: "Li-Po Battery Capacity Tester", board: "Nano", components: "Arduino Nano, INA219 Current Sensor, 10W Power Resistor", type: "display" },
+            { title: "Multi-Zone Industrial Automation", board: "Other", components: "Arduino Mega 2560, 16-Channel Relay Board, 4x DHT22 Sensors, 20x4 LCD", type: "server" },
+            { title: "Humanoid Robot Walking Biped", board: "Other", components: "Arduino Mega 2560, 12x MG996R High-Torque Servos, 7.4V Li-Po Battery", type: "radar" },
+            { title: "GPS Logger Tracking Device", board: "Other", components: "Arduino Mega 2560, NEO-6M GPS Module, MicroSD Card Adapter, Antenna", type: "sensor" },
+            { title: "USB MIDI Music Launchpad", board: "Other", components: "Arduino Leonardo, 16x Push Buttons, 16x 10k Resistors, USB-B Cable", type: "sensor" },
+            { title: "Keyboard Macro Stream Deck", board: "Other", components: "Arduino Pro Micro, 6x Cherry MX Mechanical Switches, Custom Case", type: "led" },
+            { title: "Wi-Fi IoT Smart Switch", board: "ESP32", components: "ESP32 NodeMCU, 4-Channel Relay Board, Home WiFi Network Connection", type: "server" },
+            { title: "NTP Server Wi-Fi Digital Clock", board: "ESP32", components: "ESP32 NodeMCU, 0.96 inch I2C OLED Display, Internet Connection", type: "clock" },
+            { title: "ESP32-CAM Wi-Fi Video Security", board: "ESP32", components: "ESP32-CAM Module, OV2640 Camera Lens, MicroSD Card", type: "server" },
+            { title: "Web Server Climate Dashboard", board: "ESP32", components: "ESP32 NodeMCU, DHT22 High-Accuracy Sensor, Router Connection", type: "server" },
+            { title: "Bluetooth BLE Smart Tag Tracker", board: "ESP32", components: "ESP32 Board, Passive Piezo Buzzer, Smartphone App Link", type: "sensor" },
+            { title: "Alexa Controlled Home Appliances", board: "ESP32", components: "ESP32 NodeMCU, Sinric Pro API Account, 2-Channel Relay Module", type: "server" },
+            { title: "Over-The-Air (OTA) Code Updater", board: "ESP32", components: "ESP32 NodeMCU, Micro USB Cable, Wi-Fi Firmware Update Script", type: "server" },
+            { title: "Firebase Realtime Data Logger", board: "ESP32", components: "ESP32 NodeMCU, LDR Photoresistor, Firebase Cloud Database", type: "server" },
+            { title: "Cryptocurrency Live Price Ticker", board: "ESP32", components: "ESP32 Board, MAX7219 Dot Matrix Display, CoinGecko Public API", type: "display" },
+            { title: "Wi-Fi Packet Sniffer Indicator", board: "ESP32", components: "ESP32 Development Board, Red Alert LED, Green Status LED", type: "server" },
+            { title: "Telegram Bot Appliance Controller", board: "ESP32", components: "ESP32 NodeMCU, Universal Telegram Bot API, 5V Active Relay", type: "server" },
+            { title: "RFID Access Cloud Log System", board: "ESP32", components: "ESP32 NodeMCU, RC522 RFID Module, Google Webhook Link", type: "server" },
+            { title: "ESP32 Web Server Doorbell", board: "ESP32", components: "ESP32 Board, Tactile Push Button, Active Buzzer, Local Network", type: "server" },
+            { title: "ESP-NOW Mesh Communication Node", board: "ESP32", components: "2x ESP32 NodeMCU Boards, 2x Push Buttons, Peer Protocol", type: "server" },
+            { title: "RFID Smart Shopping Cart", board: "ESP32", components: "ESP32 NodeMCU, MFRC522 RFID Reader, I2C 16x2 LCD Display", type: "display" },
+            { title: "Web-Based Oscilloscope Tool", board: "ESP32", components: "ESP32 NodeMCU, 10k Potentiometer, Analog Input Pin, Web Grid", type: "server" },
+            { title: "Twilio SMS Emergency Alert", board: "ESP32", components: "ESP32 Board, MQ-135 Air Quality Sensor, Twilio API Gateway", type: "server" },
+            { title: "E-Paper Wi-Fi News Reader", board: "ESP32", components: "ESP32 NodeMCU, 2.9 inch SPI E-Paper Display, News API Endpoint", type: "display" },
+            { title: "Google Sheets Realtime Logger", board: "ESP32", components: "ESP32 NodeMCU, TMP36 Temp Sensor, Google Webhook URL", type: "server" },
+            { title: "MQTT Broker Sensor Network", board: "ESP32", components: "ESP32 NodeMCU, HiveMQ Free Cloud Broker, DHT11 Sensor", type: "server" },
+            { title: "Touch Sensor RGB Lamp Control", board: "ESP32", components: "ESP32 Board, Built-in Capacitive Touch Pin, NeoPixel RGB Ring", type: "led" },
+            { title: "Deep Sleep Solar Remote Node", board: "ESP32", components: "ESP32 NodeMCU, LiFePO4 Solar Controller, 100k Resistor", type: "server" },
+            { title: "Internet Radio Stream Player", board: "ESP32", components: "ESP32 NodeMCU, I2S DAC Audio Decoder, 8 Ohm Speaker", type: "motor" },
+            { title: "Bluetooth Phone Music Controller", board: "ESP32", components: "ESP32 Board, 3x Tactile Buttons, AVRCP Bluetooth Protocol", type: "sensor" },
+            { title: "Captive Portal Wi-Fi Manager", board: "ESP32", components: "ESP32 NodeMCU, Internal EEPROM Storage, Configuration Portal", type: "server" },
+            { title: "Web Server Servo Controller", board: "ESP32", components: "ESP32 NodeMCU, MG995 Metal Gear Servo Motor, HTML UI Slider", type: "server" },
+            { title: "OpenWeatherMap Screen Display", board: "ESP32", components: "ESP32 NodeMCU, ST7735 1.8 inch TFT Color Display, API", type: "display" },
+            { title: "IFTTT Smartphone Email Notice", board: "ESP32", components: "ESP32 NodeMCU, HC-SR501 PIR Motion Sensor, IFTTT Trigger", type: "server" },
+            { title: "Bluetooth Wireless Gamepad", board: "ESP32", components: "ESP32 Board, 2-Axis Joystick, 4x Arcade Buttons, BLE Library", type: "server" },
+            { title: "ThingsPeak Live Field Dashboard", board: "ESP32", components: "ESP32 NodeMCU, Soil Moisture Sensor, ThingSpeak Channel", type: "server" }
+        ];
+
+        function getCodeTemplate(title, board, type) {
+            let pin = (board === "ESP32") ? "2" : "13";
+            let c = "// Firmware: " + title + "\n// Board: Arduino " + board + "\n\n";
+            if (board === "ESP32") { c += "#include <WiFi.h>\n"; }
+            
+            if (type === "clock") {
+                c += "#include <Wire.h>\n#include <RTClib.h>\nRTC_DS1307 rtc;\n\nvoid setup() {\n  Serial.begin(9600);\n  rtc.begin();\n}\nvoid loop() {\n  DateTime now = rtc.now();\n  Serial.println(now.minute());\n  delay(1000);\n}";
+            } else if (type === "radar" || type === "lock") {
+                c += "#include <Servo.h>\nServo s;\nvoid setup() {\n  s.attach(9);\n}\nvoid loop() {\n  s.write(90);\n  delay(1000);\n}";
+            } else if (type === "display") {
+                c += "#include <Wire.h>\n#include <LiquidCrystal_I2C.h>\nLiquidCrystal_I2C lcd(0x27,16,2);\nvoid setup() {\n  lcd.init();\n  lcd.print(\"Hub Active\");\n}\nvoid loop() {}";
+            } else if (type === "server") {
+                c += "#include <WebServer.h>\nWebServer sv(80);\nvoid setup() {\n  sv.begin();\n}\nvoid loop() {\n  sv.handleClient();\n}";
+            } else if (type === "sensor") {
+                c += "void setup() {\n  Serial.begin(9600);\n}\nvoid loop() {\n  int v = analogRead(A0);\n  Serial.println(v);\n  delay(500);\n}";
+            } else {
+                c += "void setup() {\n  pinMode(" + pin + ", OUTPUT);\n}\nvoid loop() {\n  digitalWrite(" + pin + ", HIGH);\n  delay(1000);\n  digitalWrite(" + pin + ", LOW);\n  delay(1000);\n}";
+            }
+            return c;
+        }
+
+        function processAndRender(rawArray) {
+            window.allProjects = rawArray.map((item, index) => {
+                return {
+                    id: index + 1,
+                    title: item.title,
+                    board: item.board,
+                    components: String(item.components).split(','),
+                    code: getCodeTemplate(item.title, item.board, item.type)
+                };
+            });
+            renderProjects(window.allProjects);
+        }
+
+        function renderProjects(data) {
+            const container = document.getElementById('projectContainer');
+            const countText = document.getElementById('projectCount');
+            if(!container || !countText) return;
+            
+            container.innerHTML = '';
+            countText.innerText = "Showing " + data.length + " projects";
+
+            data.forEach(proj => {
+                const bKey = proj.board.toLowerCase();
+                const badgeClass = bKey === 'uno' ? 'uno' : (bKey === 'nano' ? 'nano' : bKey === 'esp32' ? 'esp32' : 'other');
+                const compList = proj.components.map(c => "<li><strong>" + c.trim() + "</strong></li>").join('');
+                
+                container.innerHTML += `
+                    <div class="project-card">
+                        <h2><span class="badge ${badgeClass}">${proj.board}</span> ${proj.title}</h2>
+                        <h3>Components Required:</h3>
+                        <ul class="components">${compList}</ul>
+                        <h3>Source Code:</h3>
+                        <pre><code>${escapeHtml(proj.code)}</code></pre>
+                    </div>
+                `;
+            });
+        }
+
+        function escapeHtml(text) {
+            return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+        }
+
+        function filterProjects() {
+            const query = document.getElementById('searchInput').value.toLowerCase();
+            const board = document.getElementById('boardFilter').value;
+
+            const filtered = window.allProjects.filter(proj => {
+                const matchesSearch = proj.title.toLowerCase().includes(query) || 
+                                      proj.components.some(c => c.toLowerCase().includes(query));
+                const matchesBoard = board === 'all' || proj.board === board;
+                return matchesSearch && matchesBoard;
+            });
+            renderProjects(filtered);
+        }
+
+        // Run directly on startup
+        processAndRender(backupProjects);
+    </script>
+</body>
+</html>
+
